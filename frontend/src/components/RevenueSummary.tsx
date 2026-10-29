@@ -36,22 +36,29 @@ export const RevenueSummary: React.FC<RevenueSummaryProps> = ({ propertyId, mont
     const [error, setError] = useState('');
 
     useEffect(() => {
+        let cancelled = false;
+    
         const fetchRevenue = async () => {
             setLoading(true);
             setError('');
             try {
                 const response = await SecureAPI.getDashboardSummary(propertyId, { month, year });
+                if (cancelled) return;
                 setData(response);
             } catch (err) {
+                if (cancelled) return;
                 setData(null);
                 setError('Failed to load revenue data');
                 console.error(err);
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
-
+    
         fetchRevenue();
+        return () => {
+            cancelled = true;
+        };
     }, [propertyId, month, year]);
 
     if (loading) {
